@@ -1,0 +1,31 @@
+{
+  "name": "scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "scraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/judgejab/scraper.git"
+  },
+  "author": "Matt Cleary",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/judgejab/scraper/issues"
+  },
+  "homepage": "https://github.com/judgejab/scraper#readme",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "json2csv": "^3.7.0",
+    "moment": "^2.15.1",
+    "phantomjs": "^2.1.7",
+    "request": "^2.75.0",
+    "request-promise": "^4.1.1",
+    "scraperjs": "^1.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.5.0"
+  }
+}
