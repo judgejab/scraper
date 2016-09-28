@@ -11,10 +11,10 @@ var moment = require('moment');
 var fs = require('fs');
 
 //harcoded url
-var url = 'http://shirts4mike.com/';
+var urlHome = 'http://shirts4mike.com/';
 
 //url for tshirt pages
-var urlSet = new Set();
+var urlSet = [];
 
 var tshirtArray = [];
 
@@ -23,11 +23,20 @@ const requestPromise = function(url) {
     return new Promise(function(resolve, reject) {
         request(url, function(error, response, html) {
             
-            if(error)return reject(error);
+            if(error) { 
+                errorHandler(error);
+                return reject(error);
+            }
             
             if(!error && response.statusCode == 200){
                 return resolve(html);   
-            }       
+            }
+
+            if(response.statusCode !== 200){
+                console.log("response code is " + response.statusCode);
+            }
+
+            return resolve("");      
         });
     });
 }
@@ -41,17 +50,19 @@ function scrape (url) {
             var $ = cheerio.load(html);
 
             var links = [];
-
+            var URL = 'http://shirts4mike.com/';
             //get all the links
             $('a[href*=shirt]').each(function(){
                 var a = $(this).attr('href');
                 //add into link array
-                links.push(url + a);
+                links.push(URL + a);
             });
             // return array of links
             return links;
         });
 }
+
+
 
 
 function nextStep (arrayOfLinks) { 
@@ -78,7 +89,7 @@ function lastStep (obj){
         if($('[type=submit]').length !== 0){
                             
             //add page to set
-            urlSet.add(obj.arrayOfUrls[i]);
+            urlSet.push(obj.arrayOfUrls[i]);
             console.log(obj.arrayOfUrls[i]);
                             
         } else if(remainder == undefined) {
@@ -124,8 +135,8 @@ function lastScraperPt2(html){
         //add values into tshirt object
         tshirtObject.Title = title;
         tshirtObject.Price = price;
-        tshirtObject.ImageURL = imgURL;
-        tshirtObject.URL = url;
+        tshirtObject.ImageURL = urlHome + imgURL;
+        tshirtObject.URL = urlSet[i];
         tshirtObject.Date = moment().format('MMMM Do YYYY, h:mm:ss a');
 
         //add the object into the array of tshirts
@@ -155,12 +166,12 @@ function convertJson2Csv(tshirtArray){
         //Write file
         fs.writeFile(fileName, csv, {overwrite: true}, function(err) {
             console.log('file saved');
-            if (err) throw err;
+            if (err) errorHandler(err);
         });
 }
 
 
-scrape(url) //scrape from original entry point
+scrape(urlHome) //scrape from original entry point
     .then(nextStep) 
     .then(lastStep)
     .then(scrape)
@@ -179,7 +190,25 @@ scrape(url) //scrape from original entry point
     //This is to be tested by disabling wifi on your device.
     //When an error occurs log it to a file scraper-error.log . It should append to the bottom of the file with a time stamp and error
 
-
+var errorHandler = function (error) {
+    console.log(error.message);
+    console.log('The scraper could not not scrape data from ' + url + ' there is either a problem with your internet connection or the site may be down');
+    /**
+    * create new date for log file
+     */
+    var loggerDate = new Date();
+    /**
+     * create message as a variable
+    */
+    var errLog = '[' + loggerDate + '] ' + error.message + '\n';
+    /**
+    *when the error occurs, log that to the error logger file
+    */
+    fs.appendFile('scraper-error.log', errLog, function (err) {
+        if (err) throw err;
+        console.log('There was an error. The error was logged to scraper-error.log');
+    });
+};
 
 
 
